@@ -1,32 +1,40 @@
 package main
 
 import (
-	"fmt"
 	"log"
-	"net/http"
-	"os"
+	"net"
 )
 
 func main() {
-	http.HandleFunc("/", indexHandler)
-	port := os.Getenv("PORT")
-	if port == "" {
-		port = "8080"
-		log.Printf("Defaulting to port %s", port)
+
+	listener, err := net.Listen("tcp", "0.0.0.0:6370")
+
+	if err != nil {
+		log.Fatal("Failed to bind to port 6379", err)
 	}
 
-	log.Printf("Listening on port %s", port)
-	log.Printf("Open http://localhost:%s in the browser", port)
-	log.Fatal(http.ListenAndServe(fmt.Sprintf(":%s", port), nil))
+	defer func(lis net.Listener) {
+		err := lis.Close()
+		if err != nil {
+			log.Fatal("Failed to close: ", err)
+		}
+	}(listener)
+
+	for {
+		conn, err := listener.Accept()
+		if err != nil {
+			log.Fatal("Error accepting connections: ", err)
+		}
+		handleClient(conn)
+	}
+
 }
 
-func indexHandler(w http.ResponseWriter, r *http.Request) {
-	if r.URL.Path != "/" {
-		http.NotFound(w, r)
-		return
-	}
-	_, err := fmt.Fprint(w, "Hello, World!")
-	if err != nil {
-		w.WriteHeader(http.StatusInternalServerError)
-	}
+func handleClient(conn net.Conn) {
+	defer func(con net.Conn) {
+		err := con.Close()
+		if err != nil {
+			log.Fatal("Failed to close connection: ", err)
+		}
+	}(conn)
 }

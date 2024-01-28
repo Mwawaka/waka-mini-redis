@@ -29,8 +29,6 @@
 ehthumbs.db
 Thumbs.db
 
-.env
-gin-bin
-
 bin/
-vendor/
+
+resources/
