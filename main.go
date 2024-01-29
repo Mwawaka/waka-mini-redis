@@ -20,6 +20,7 @@ func main() {
 }
 
 func run() error {
+
 	listener, err := net.Listen("tcp", addressString)
 
 	if err != nil {
@@ -38,12 +39,14 @@ func run() error {
 		if err != nil {
 			return fmt.Errorf("error accepting connections: %v\n", err)
 		}
-		handleClient(conn)
+
+		go handleClient(conn)
 	}
 
 }
 
 func handleClient(conn net.Conn) {
+
 	defer func(con net.Conn) {
 		err := con.Close()
 		if err != nil {
@@ -52,6 +55,7 @@ func handleClient(conn net.Conn) {
 	}(conn)
 
 	for {
+
 		buf := make([]byte, 128)
 
 		n, err := conn.Read(buf)
@@ -69,5 +73,4 @@ func handleClient(conn net.Conn) {
 			log.Println("error writing to buffer: ", err)
 		}
 	}
-
 }
