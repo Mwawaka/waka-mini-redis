@@ -38,6 +38,7 @@ func run() error {
 		err := l.Close()
 		if err != nil {
 			log.Printf("failed to close listener: %v\n", err)
+			return
 		}
 	}(listener)
 
@@ -63,45 +64,35 @@ func handleClient(conn net.Conn) {
 
 	for {
 		handleRequest(conn)
-
 	}
-
-	//for {
-	//
-	//	buf := make([]byte, 128)
-	//
-	//	n, err := conn.Read(buf)
-	//
-	//	if err != nil {
-	//		log.Println("error reading from buffer: ", err)
-	//		return
-	//	}
-	//	log.Printf("data read: %s", string(buf[:n]))
-	//
-	//	res := "+PONG\r\n"
-	//	_, err = conn.Write([]byte(res))
-	//
-	//	if err != nil {
-	//		log.Println("error writing to buffer: ", err)
-	//	}
-	//}
 }
 
 func handleRequest(conn net.Conn) {
 
 	reader := bufio.NewReader(conn)
+	line, err := readLine(reader)
 
-	data, _ := reader.ReadString('\n')
-	line := strings.TrimSuffix(data, "\r\n")
+	if err != nil {
+		log.Printf("Error reading line: %v", err)
+		return
+	}
+
 	var commands []string
 
 	if strings.HasPrefix(line, "*") {
-		n, _ := strconv.Atoi(line[1:])
-		fmt.Printf("Length of array: %d\n", n)
+		n, err := strconv.Atoi(line[1:])
+		if err != nil {
+			log.Printf("Error converting string to int: %v", err)
+			return
+		}
 
 		for i := 0; i < n; i++ {
-			argLine, _ := reader.ReadString('\n')
-			argLine = strings.TrimSuffix(argLine, "\r\n")
+			argLine, err := readLine(reader)
+
+			if err != nil {
+				log.Printf("Error reading argument line: %v", err)
+				return
+			}
 
 			if strings.HasPrefix(argLine, "$") {
 				argLen, _ := strconv.Atoi(argLine[1:])
