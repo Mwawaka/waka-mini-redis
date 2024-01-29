@@ -130,8 +130,8 @@ func handleCommands(commands []string) []byte {
 	return result
 }
 
-func response(resType, msg string) []byte {
-	result := resType + msg + crlf
+func response(respType, msg string) []byte {
+	result := respType + msg + crlf
 	return []byte(result)
 }
 
