@@ -3,6 +3,7 @@ package main
 import (
 	"bufio"
 	"fmt"
+	"io"
 	"log"
 	"net"
 	"strconv"
@@ -65,33 +66,43 @@ func handleClient(conn net.Conn) {
 }
 
 func handleRequest(conn net.Conn) {
-	reader := bufio.NewReader(conn)
-	data, _ := reader.ReadString('\n')
-	line := strings.TrimSuffix(data, crlf)
 	var commands []string
+	reader := bufio.NewReader(conn)
+	line, err := readLine(reader)
+
+	if err != nil {
+		log.Fatal("error reading string:", err)
+	}
 
 	if strings.HasPrefix(line, "*") {
 		n, _ := strconv.Atoi(line[1:])
 		fmt.Printf("Length of array: %d\n", n)
 
 		for i := 0; i < n; i++ {
-			argLine, _ := reader.ReadString('\n')
-			argLine = strings.TrimSuffix(argLine, crlf)
+			argLine, err := readLine(reader)
+
+			if err != nil {
+				log.Fatal("error reading string:", err)
+			}
 
 			if strings.HasPrefix(argLine, "$") {
 				argLen, _ := strconv.Atoi(argLine[1:])
 				fmt.Printf("Length of argument: %d\n", argLen)
-				n, _ := reader.ReadString('\n')
-				out := strings.TrimSuffix(n, crlf)
-				commands = append(commands, out)
-				fmt.Printf("Arguments: %s\n", n)
+				args, err := readLine(reader)
+
+				if err != nil {
+					log.Fatal("error reading string:", err)
+				}
+
+				commands = append(commands, args)
+
 			}
 		}
 
 	}
 
 	res := handleCommands(commands)
-	_, err := conn.Write(res)
+	_, err = conn.Write(res)
 
 	if err != nil {
 		log.Fatal("failed closing the connection: ", err)
@@ -120,4 +131,17 @@ func handleCommands(commands []string) []byte {
 func response(msg, resType string) []byte {
 	result := resType + msg + crlf
 	return []byte(result)
+}
+
+func readLine(reader *bufio.Reader) (string, error) {
+	data, err := reader.ReadString('\n')
+
+	if err != nil {
+		if err == io.EOF {
+			return "", nil
+		}
+		return "", err
+	}
+
+	return strings.TrimSuffix(data, "\r\n"), nil
 }
