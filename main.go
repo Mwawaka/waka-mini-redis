@@ -15,9 +15,12 @@ const (
 	redisServerAddress = "0.0.0.0:6379"
 )
 const (
-	simpleString = "+"
-	simpleError  = "-"
-	crlf         = "\r\n"
+	simpleStrings = "+"
+	simpleErrors  = "-"
+	integers      = ":"
+	bulkStrings   = "$"
+	arrays        = "*"
+	crlf          = "\r\n"
 )
 
 func main() {
@@ -118,20 +121,31 @@ func handleCommands(commands []string) []byte {
 		case "ECHO":
 			if len(commands) > 1 {
 				echoString := strings.Join(commands[1:], " ")
-				result = response(simpleString, echoString)
+
+				result = bulkStringResponse(echoString)
 			}
 		case "PING":
-			result = response(simpleString, "PONG")
+			result = simpleStringResponse("PONG")
 		default:
 			err := fmt.Sprintf(": %s:  command not found", commands[0])
-			result = response(simpleError, err)
+			result = simpleErrorResponse(err)
 		}
 	}
 	return result
 }
 
-func response(respType, msg string) []byte {
-	result := respType + msg + crlf
+func simpleErrorResponse(msg string) []byte {
+	result := simpleErrors + msg + crlf
+	return []byte(result)
+}
+
+func simpleStringResponse(msg string) []byte {
+	result := simpleStrings + msg + crlf
+	return []byte(result)
+}
+func bulkStringResponse(msg string) []byte {
+	size := strconv.Itoa(len(msg))
+	result := bulkStrings + size + crlf + msg + crlf
 	return []byte(result)
 }
 
