@@ -16,6 +16,7 @@ const (
 const (
 	simpleString = "+"
 	simpleError  = "-"
+	crlf         = "\r\n"
 )
 
 func main() {
@@ -73,7 +74,7 @@ func handleRequest(conn net.Conn) {
 	reader := bufio.NewReader(conn)
 
 	data, _ := reader.ReadString('\n')
-	line := strings.TrimSuffix(data, "\r\n")
+	line := strings.TrimSuffix(data, crlf)
 	var commands []string
 
 	if strings.HasPrefix(line, "*") {
@@ -82,14 +83,14 @@ func handleRequest(conn net.Conn) {
 
 		for i := 0; i < n; i++ {
 			argLine, _ := reader.ReadString('\n')
-			argLine = strings.TrimSuffix(argLine, "\r\n")
+			argLine = strings.TrimSuffix(argLine, crlf)
 
 			if strings.HasPrefix(argLine, "$") {
 				argLen, _ := strconv.Atoi(argLine[1:])
 				fmt.Printf("Length of argument: %d\n", argLen)
 
 				n, _ := reader.ReadString('\n')
-				out := strings.TrimSuffix(n, "\r\n")
+				out := strings.TrimSuffix(n, crlf)
 				commands = append(commands, out)
 				fmt.Printf("Arguments: %s\n", n)
 			}
@@ -127,11 +128,11 @@ func handleCommands(commands []string) []byte {
 }
 
 func simpleStringResponse(s string) []byte {
-	result := simpleString + s + "\r\n"
+	result := simpleString + s + crlf
 	return []byte(result)
 }
 
 func simpleErrorResponse(s string) []byte {
-	result := simpleError + s + "\r\n"
+	result := simpleError + s + crlf
 	return []byte(result)
 }
