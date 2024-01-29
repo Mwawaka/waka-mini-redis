@@ -15,12 +15,13 @@ const (
 	redisServerAddress = "0.0.0.0:6379"
 )
 const (
-	simpleStrings = "+"
-	simpleErrors  = "-"
-	integers      = ":"
-	bulkStrings   = "$"
-	arrays        = "*"
-	crlf          = "\r\n"
+	simpleStrings  = "+"
+	simpleErrors   = "-"
+	integers       = ":"
+	bulkStrings    = "$"
+	arrays         = "*"
+	nullBulkString = "-1"
+	crlf           = "\r\n"
 )
 
 var (
@@ -139,6 +140,10 @@ func handleCommands(commands []string) []byte {
 		case "GET":
 			key := commands[1]
 			value := db[key]
+			if value == "" {
+				return nullBulkStringResponse()
+
+			}
 			result = bulkStringResponse(value)
 		default:
 			err := fmt.Sprintf(": %s:  command not found", commands[0])
@@ -160,6 +165,11 @@ func simpleStringResponse(msg string) []byte {
 func bulkStringResponse(msg string) []byte {
 	size := strconv.Itoa(len(msg))
 	result := bulkStrings + size + crlf + msg + crlf
+	return []byte(result)
+}
+
+func nullBulkStringResponse() []byte {
+	result := bulkStrings + nullBulkString + crlf
 	return []byte(result)
 }
 
