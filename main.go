@@ -15,6 +15,7 @@ const (
 )
 const (
 	simpleString = "+"
+	simpleError  = "-"
 )
 
 func main() {
@@ -111,13 +112,14 @@ func handleCommands(commands []string) []byte {
 
 	if len(commands) > 0 {
 		switch commands[0] {
-		case "echo":
+		case "ECHO":
 			if len(commands) > 1 {
 				echoString := strings.Join(commands[1:], " ")
 				result = simpleStringResponse(echoString)
 			}
 		default:
-			fmt.Println("Unknown command")
+			err := fmt.Sprintf("unknown command: %s :try: %s", commands[0], strings.ToUpper(commands[0]))
+			result = simpleErrorResponse(err)
 		}
 	}
 
@@ -126,5 +128,10 @@ func handleCommands(commands []string) []byte {
 
 func simpleStringResponse(s string) []byte {
 	result := simpleString + s + "\r\n"
+	return []byte(result)
+}
+
+func simpleErrorResponse(s string) []byte {
+	result := simpleError + s + "\r\n"
 	return []byte(result)
 }
