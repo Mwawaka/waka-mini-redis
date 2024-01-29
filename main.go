@@ -114,21 +114,23 @@ func handleCommands(commands []string) []byte {
 	var result []byte
 
 	if len(commands) > 0 {
-		switch commands[0] {
+		switch strings.ToUpper(commands[0]) {
 		case "ECHO":
 			if len(commands) > 1 {
 				echoString := strings.Join(commands[1:], " ")
-				result = response(echoString, simpleString)
+				result = response(simpleString, echoString)
 			}
+		case "PING":
+			result = response(simpleString, "PONG")
 		default:
 			err := fmt.Sprintf(": %s:  command not found", commands[0])
-			result = response(err, simpleError)
+			result = response(simpleError, err)
 		}
 	}
 	return result
 }
 
-func response(msg, resType string) []byte {
+func response(resType, msg string) []byte {
 	result := resType + msg + crlf
 	return []byte(result)
 }
