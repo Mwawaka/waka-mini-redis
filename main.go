@@ -107,22 +107,17 @@ func handleCommands(commands []string) []byte {
 		case "ECHO":
 			if len(commands) > 1 {
 				echoString := strings.Join(commands[1:], " ")
-				result = simpleStringResponse(echoString)
+				result = response(echoString, simpleString)
 			}
 		default:
 			err := fmt.Sprintf(": %s:  command not found", commands[0])
-			result = simpleErrorResponse(err)
+			result = response(err, simpleError)
 		}
 	}
 	return result
 }
 
-func simpleStringResponse(s string) []byte {
-	result := simpleString + s + crlf
-	return []byte(result)
-}
-
-func simpleErrorResponse(s string) []byte {
-	result := simpleError + s + crlf
+func response(msg, resType string) []byte {
+	result := resType + msg + crlf
 	return []byte(result)
 }
