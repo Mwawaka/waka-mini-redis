@@ -77,7 +77,7 @@ func handleRequest(conn net.Conn) {
 		log.Fatal("error reading string:", err)
 	}
 
-	if strings.HasPrefix(line, "*") {
+	if strings.HasPrefix(line, arrays) {
 		n, _ := strconv.Atoi(line[1:])
 		fmt.Printf("Length of array: %d\n", n)
 
@@ -88,7 +88,7 @@ func handleRequest(conn net.Conn) {
 				log.Fatal("error reading string:", err)
 			}
 
-			if strings.HasPrefix(argLine, "$") {
+			if strings.HasPrefix(argLine, bulkStrings) {
 				argLen, _ := strconv.Atoi(argLine[1:])
 				fmt.Printf("Length of argument: %d\n", argLen)
 				args, err := readLine(reader)
