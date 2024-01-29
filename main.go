@@ -95,11 +95,11 @@ func handleRequest(conn net.Conn) {
 			}
 
 			if strings.HasPrefix(argLine, "$") {
-				argLen, _ := strconv.Atoi(argLine[1:])
-				fmt.Printf("Length of argument: %d\n", argLen)
-
-				n, _ := reader.ReadString('\n')
-				out := strings.TrimSuffix(n, "\r\n")
+				out, err := readLine(reader)
+				if err != nil {
+					log.Printf("Error reading argument line: %v", err)
+					return
+				}
 				commands = append(commands, out)
 				fmt.Printf("Arguments: %s\n", n)
 			}
@@ -108,8 +108,12 @@ func handleRequest(conn net.Conn) {
 	}
 
 	res := handleCommands(commands)
+	_, err = conn.Write(res)
 
-	_, err := conn.Write(res)
+	if err != nil {
+		log.Printf("Error: %v\n", err)
+		return
+	}
 
 }
 
