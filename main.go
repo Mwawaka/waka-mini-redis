@@ -23,6 +23,10 @@ const (
 	crlf          = "\r\n"
 )
 
+var (
+	db = make(map[string]string)
+)
+
 func main() {
 	err := run()
 	if err != nil {
@@ -92,7 +96,7 @@ func handleRequest(conn net.Conn) {
 				argLen, _ := strconv.Atoi(argLine[1:])
 				fmt.Printf("Length of argument: %d\n", argLen)
 				args, err := readLine(reader)
-
+				fmt.Println(args)
 				if err != nil {
 					log.Fatal("error reading string:", err)
 				}
@@ -126,6 +130,13 @@ func handleCommands(commands []string) []byte {
 			}
 		case "PING":
 			result = simpleStringResponse("PONG")
+		case "SET":
+			key := commands[1]
+			value := strings.Join(commands[2:], " ")
+			db[key] = value
+			fmt.Println(db)
+			result = bulkStringResponse("OK")
+
 		default:
 			err := fmt.Sprintf(": %s:  command not found", commands[0])
 			result = simpleErrorResponse(err)
