@@ -51,21 +51,23 @@ func handleClient(conn net.Conn) {
 	}(conn)
 
 	//Read Data
-	buf := make([]byte, 128)
+	for {
+		buf := make([]byte, 128)
 
-	n, err := conn.Read(buf)
+		n, err := conn.Read(buf)
 
-	if err != nil {
-		log.Println("error reading from buffer: ", err)
-		return
-	}
-	log.Printf("data read: %s\n", string(buf[:n]))
+		if err != nil {
+			log.Println("error reading from buffer: ", err)
+			return
+		}
+		log.Printf("data read: %s\n", buf[:n])
 
-	res := "+PONG\r\n"
-	_, err = conn.Write([]byte(res))
+		res := "+PONG\r\n"
+		_, err = conn.Write([]byte(res))
 
-	if err != nil {
-		log.Println("error writing to buffer: ", err)
+		if err != nil {
+			log.Println("error writing to buffer: ", err)
+		}
 	}
 
 }
