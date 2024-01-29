@@ -32,6 +32,7 @@ func run() error {
 			log.Printf("failed to close listener: %v\n", err)
 		}
 	}(listener)
+
 	for {
 		conn, err := listener.Accept()
 		if err != nil {
@@ -50,7 +51,6 @@ func handleClient(conn net.Conn) {
 		}
 	}(conn)
 
-	//Read Data
 	for {
 		buf := make([]byte, 128)
 
