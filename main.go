@@ -118,7 +118,7 @@ func handleRequest(conn net.Conn) {
 
 	res := handleCommands(commands)
 
-	conn.Write(res)
+	_, err := conn.Write(res)
 
 }
 
@@ -145,8 +145,12 @@ func simpleStringResponse(s string) []byte {
 	return []byte(result)
 }
 
-//func init() {
-//	fmt.Println(strings.TrimSuffix("###Hello, world!!!", "world!!!"))
-//}
+func readLine(reader *bufio.Reader) (string, error) {
+	data, err := reader.ReadString('\n')
+	if err != nil {
+		return "", err
+	}
+	return strings.TrimSuffix(data, "\r\n"), nil
+}
 
 // TODO run yay -Rsu redis
