@@ -38,7 +38,6 @@ func run() error {
 		err := l.Close()
 		if err != nil {
 			log.Printf("failed to close listener: %v\n", err)
-			return
 		}
 	}(listener)
 
@@ -64,42 +63,32 @@ func handleClient(conn net.Conn) {
 
 	for {
 		handleRequest(conn)
+
 	}
 }
 
 func handleRequest(conn net.Conn) {
 
 	reader := bufio.NewReader(conn)
-	line, err := readLine(reader)
 
-	if err != nil {
-		log.Printf("Error reading line: %v", err)
-		return
-	}
-
+	data, _ := reader.ReadString('\n')
+	line := strings.TrimSuffix(data, "\r\n")
 	var commands []string
 
 	if strings.HasPrefix(line, "*") {
-		n, err := strconv.Atoi(line[1:])
-		if err != nil {
-			log.Printf("Error converting string to int: %v", err)
-			return
-		}
+		n, _ := strconv.Atoi(line[1:])
+		fmt.Printf("Length of array: %d\n", n)
 
 		for i := 0; i < n; i++ {
-			argLine, err := readLine(reader)
-
-			if err != nil {
-				log.Printf("Error reading argument line: %v", err)
-				return
-			}
+			argLine, _ := reader.ReadString('\n')
+			argLine = strings.TrimSuffix(argLine, "\r\n")
 
 			if strings.HasPrefix(argLine, "$") {
-				out, err := readLine(reader)
-				if err != nil {
-					log.Printf("Error reading argument line: %v", err)
-					return
-				}
+				argLen, _ := strconv.Atoi(argLine[1:])
+				fmt.Printf("Length of argument: %d\n", argLen)
+
+				n, _ := reader.ReadString('\n')
+				out := strings.TrimSuffix(n, "\r\n")
 				commands = append(commands, out)
 				fmt.Printf("Arguments: %s\n", n)
 			}
@@ -108,11 +97,11 @@ func handleRequest(conn net.Conn) {
 	}
 
 	res := handleCommands(commands)
-	_, err = conn.Write(res)
+
+	_, err := conn.Write(res)
 
 	if err != nil {
-		log.Printf("Error: %v\n", err)
-		return
+		log.Fatal("failed closing the connection: ", err)
 	}
 
 }
@@ -124,8 +113,8 @@ func handleCommands(commands []string) []byte {
 		switch commands[0] {
 		case "echo":
 			if len(commands) > 1 {
-				fmt.Println(commands[1])
-				result = simpleStringResponse(commands[1])
+				echoString := strings.Join(commands[1:], " ")
+				result = simpleStringResponse(echoString)
 			}
 		default:
 			fmt.Println("Unknown command")
@@ -139,13 +128,3 @@ func simpleStringResponse(s string) []byte {
 	result := simpleString + s + "\r\n"
 	return []byte(result)
 }
-
-func readLine(reader *bufio.Reader) (string, error) {
-	data, err := reader.ReadString('\n')
-	if err != nil {
-		return "", err
-	}
-	return strings.TrimSuffix(data, "\r\n"), nil
-}
-
-// TODO run yay -Rsu redis
