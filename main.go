@@ -136,7 +136,10 @@ func handleCommands(commands []string) []byte {
 			db[key] = value
 			fmt.Println(db)
 			result = bulkStringResponse("OK")
-
+		case "GET":
+			key := commands[1]
+			value := db[key]
+			result = bulkStringResponse(value)
 		default:
 			err := fmt.Sprintf(": %s:  command not found", commands[0])
 			result = simpleErrorResponse(err)
