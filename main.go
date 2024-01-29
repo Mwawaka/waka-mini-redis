@@ -20,20 +20,17 @@ const (
 )
 
 func main() {
-
 	err := run()
 	if err != nil {
 		log.Fatal(err)
 	}
-
 }
 
 func run() error {
-
 	listener, err := net.Listen(redisServerNetwork, redisServerAddress)
 
 	if err != nil {
-		return fmt.Errorf("failed to bind to port adress: %s : %v\n", redisServerAddress, err)
+		return fmt.Errorf("failed to bind to port adress: %s", redisServerAddress)
 	}
 
 	defer func(l net.Listener) {
@@ -55,7 +52,6 @@ func run() error {
 }
 
 func handleClient(conn net.Conn) {
-
 	defer func(con net.Conn) {
 		err := con.Close()
 		if err != nil {
@@ -65,14 +61,11 @@ func handleClient(conn net.Conn) {
 
 	for {
 		handleRequest(conn)
-
 	}
 }
 
 func handleRequest(conn net.Conn) {
-
 	reader := bufio.NewReader(conn)
-
 	data, _ := reader.ReadString('\n')
 	line := strings.TrimSuffix(data, crlf)
 	var commands []string
@@ -88,7 +81,6 @@ func handleRequest(conn net.Conn) {
 			if strings.HasPrefix(argLine, "$") {
 				argLen, _ := strconv.Atoi(argLine[1:])
 				fmt.Printf("Length of argument: %d\n", argLen)
-
 				n, _ := reader.ReadString('\n')
 				out := strings.TrimSuffix(n, crlf)
 				commands = append(commands, out)
@@ -99,7 +91,6 @@ func handleRequest(conn net.Conn) {
 	}
 
 	res := handleCommands(commands)
-
 	_, err := conn.Write(res)
 
 	if err != nil {
@@ -119,11 +110,10 @@ func handleCommands(commands []string) []byte {
 				result = simpleStringResponse(echoString)
 			}
 		default:
-			err := fmt.Sprintf("unknown command: %s :try: %s", commands[0], strings.ToUpper(commands[0]))
+			err := fmt.Sprintf(": %s:  command not found", commands[0])
 			result = simpleErrorResponse(err)
 		}
 	}
-
 	return result
 }
 
