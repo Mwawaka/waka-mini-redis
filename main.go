@@ -1,13 +1,20 @@
 package main
 
 import (
+	"bufio"
 	"fmt"
 	"log"
 	"net"
+	"strconv"
+	"strings"
 )
 
 const (
-	addressString = "0.0.0.0:6379"
+	redisServerNetwork = "tcp"
+	redisServerAddress = "0.0.0.0:6379"
+)
+const (
+	simpleString = "+"
 )
 
 func main() {
@@ -21,10 +28,10 @@ func main() {
 
 func run() error {
 
-	listener, err := net.Listen("tcp", addressString)
+	listener, err := net.Listen(redisServerNetwork, redisServerAddress)
 
 	if err != nil {
-		return fmt.Errorf("failed to bind to port adress: %s : %v\n", addressString, err)
+		return fmt.Errorf("failed to bind to port adress: %s : %v\n", redisServerAddress, err)
 	}
 
 	defer func(l net.Listener) {
@@ -55,22 +62,91 @@ func handleClient(conn net.Conn) {
 	}(conn)
 
 	for {
+		handleRequest(conn)
 
-		buf := make([]byte, 128)
+	}
 
-		n, err := conn.Read(buf)
+	//for {
+	//
+	//	buf := make([]byte, 128)
+	//
+	//	n, err := conn.Read(buf)
+	//
+	//	if err != nil {
+	//		log.Println("error reading from buffer: ", err)
+	//		return
+	//	}
+	//	log.Printf("data read: %s", string(buf[:n]))
+	//
+	//	res := "+PONG\r\n"
+	//	_, err = conn.Write([]byte(res))
+	//
+	//	if err != nil {
+	//		log.Println("error writing to buffer: ", err)
+	//	}
+	//}
+}
 
-		if err != nil {
-			log.Println("error reading from buffer: ", err)
-			return
+func handleRequest(conn net.Conn) {
+
+	reader := bufio.NewReader(conn)
+
+	data, _ := reader.ReadString('\n')
+	line := strings.TrimSuffix(data, "\r\n")
+	var commands []string
+
+	if strings.HasPrefix(line, "*") {
+		n, _ := strconv.Atoi(line[1:])
+		fmt.Printf("Length of array: %d\n", n)
+
+		for i := 0; i < n; i++ {
+			argLine, _ := reader.ReadString('\n')
+			argLine = strings.TrimSuffix(argLine, "\r\n")
+
+			if strings.HasPrefix(argLine, "$") {
+				argLen, _ := strconv.Atoi(argLine[1:])
+				fmt.Printf("Length of argument: %d\n", argLen)
+
+				n, _ := reader.ReadString('\n')
+				out := strings.TrimSuffix(n, "\r\n")
+				commands = append(commands, out)
+				fmt.Printf("Arguments: %s\n", n)
+			}
 		}
-		log.Printf("data read: %s\n", buf[:n])
 
-		res := "+PONG\r\n"
-		_, err = conn.Write([]byte(res))
+	}
 
-		if err != nil {
-			log.Println("error writing to buffer: ", err)
+	res := handleCommands(commands)
+
+	conn.Write(res)
+
+}
+
+func handleCommands(commands []string) []byte {
+	var result []byte
+
+	if len(commands) > 0 {
+		switch commands[0] {
+		case "echo":
+			if len(commands) > 1 {
+				fmt.Println(commands[1])
+				result = simpleStringResponse(commands[1])
+			}
+		default:
+			fmt.Println("Unknown command")
 		}
 	}
+
+	return result
 }
+
+func simpleStringResponse(s string) []byte {
+	result := simpleString + s + "\r\n"
+	return []byte(result)
+}
+
+//func init() {
+//	fmt.Println(strings.TrimSuffix("###Hello, world!!!", "world!!!"))
+//}
+
+// TODO run yay -Rsu redis
