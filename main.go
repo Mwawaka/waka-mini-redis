@@ -8,6 +8,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"time"
 )
 
 const (
@@ -133,9 +134,19 @@ func handleCommands(commands []string) []byte {
 			result = simpleStringResponse("PONG")
 		case "SET":
 			key := commands[1]
-			value := strings.Join(commands[2:], " ")
+			value := strings.Join(commands[2:len(commands)-2], " ")
 			db[key] = value
-			fmt.Println(db)
+			if strings.ToUpper(commands[len(commands)-2]) == "PX" {
+				expiryMS, err := strconv.Atoi(commands[len(commands)-1])
+
+				if err != nil {
+					log.Fatal("Error parsing string")
+				}
+				timer := time.Duration(expiryMS) * time.Millisecond
+				fmt.Println(timer)
+
+			}
+
 			result = bulkStringResponse("OK")
 		case "GET":
 			key := commands[1]
@@ -184,4 +195,8 @@ func readLine(reader *bufio.Reader) (string, error) {
 	}
 
 	return strings.TrimSuffix(data, "\r\n"), nil
+}
+
+func deleteKey(key string) {
+	db[key] = ""
 }
