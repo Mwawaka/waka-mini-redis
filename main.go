@@ -178,7 +178,7 @@ func handleSet(commands []string) []byte {
 		timer := time.After(time.Duration(expiryMS) * time.Millisecond)
 		go deleteKey(key, timer)
 	} else {
-		return simpleErrorResponse()
+		return simpleErrorResponse(command)
 	}
 
 	return bulkStringResponse("OK")
