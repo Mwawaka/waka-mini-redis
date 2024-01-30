@@ -2,10 +2,13 @@ package main
 
 import (
 	"bufio"
+	"errors"
+	"flag"
 	"fmt"
 	"io"
 	"log"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -30,7 +33,10 @@ var (
 )
 
 func main() {
-	err := run()
+
+	err := cmd()
+	err = run()
+
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -44,8 +50,7 @@ func run() error {
 	}
 
 	defer func(l net.Listener) {
-		err := l.Close()
-		if err != nil {
+		if err := l.Close(); err != nil {
 			log.Printf("failed to close listener: %v\n", err)
 		}
 	}(listener)
@@ -188,6 +193,9 @@ func handleSet(commands []string) []byte {
 	return bulkStringResponse("OK")
 }
 
+func handleConfig() {
+
+}
 func simpleErrorResponse(msg string) []byte {
 	err := fmt.Sprintf(": %s:  command not found", msg)
 	result := simpleErrors + err + crlf
@@ -227,4 +235,35 @@ func readLine(reader *bufio.Reader) (string, error) {
 func deleteKey(key string, timer <-chan time.Time) {
 	<-timer
 	db[key] = ""
+}
+
+func cmd() error {
+	//non var which returns a pointer that can be stored
+	dir := flag.String("dir", " ", "directory where the RDB files are stored")
+	filename := flag.String("filename", "", "the name of the RDB file")
+	flag.Parse()
+
+	if err := os.Mkdir(*dir, os.ModePerm); err != nil {
+		return errors.New("error creating directory")
+	}
+
+	path, err := os.Getwd()
+
+	if err != nil {
+		return errors.New("error getting directory")
+	}
+	filePath := path + "/" + *dir + "/" + *filename
+	file, err := os.Create(filePath)
+
+	if err != nil {
+		return errors.New("error creating file")
+	}
+
+	if err := file.Close(); err != nil {
+		return errors.New("error closing file")
+	}
+
+	fmt.Println("directory: ", *dir)
+	fmt.Println("database filename: ", *filename)
+	return nil
 }
