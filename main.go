@@ -125,13 +125,9 @@ func handleCommands(commands []string) []byte {
 	if len(commands) > 0 {
 		switch strings.ToUpper(commands[0]) {
 		case "ECHO":
-			if len(commands) > 1 {
-				echoString := strings.Join(commands[1:], " ")
-
-				result = bulkStringResponse(echoString)
-			}
+			result = handleEcho(commands)
 		case "PING":
-			result = simpleStringResponse("PONG")
+			result = handlePing()
 		case "SET":
 			key := commands[1]
 			value := strings.Join(commands[2:len(commands)-2], " ")
@@ -165,6 +161,19 @@ func handleCommands(commands []string) []byte {
 	return result
 }
 
+func handlePing() []byte {
+	return simpleStringResponse("PONG")
+}
+
+func handleEcho(commands []string) []byte {
+	if len(commands) > 1 {
+		echoString := strings.Join(commands[1:], " ")
+
+		return bulkStringResponse(echoString)
+	}
+	return nullBulkStringResponse()
+}
+
 func simpleErrorResponse(msg string) []byte {
 	result := simpleErrors + msg + crlf
 	return []byte(result)
@@ -174,6 +183,7 @@ func simpleStringResponse(msg string) []byte {
 	result := simpleStrings + msg + crlf
 	return []byte(result)
 }
+
 func bulkStringResponse(msg string) []byte {
 	size := strconv.Itoa(len(msg))
 	result := bulkStrings + size + crlf + msg + crlf
