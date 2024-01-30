@@ -32,7 +32,7 @@ var (
 )
 
 func main() {
-	cmd()
+	//cmd()
 	err := run()
 	if err != nil {
 		log.Fatal(err)
@@ -45,11 +45,12 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("failed to bind to port adress: %s", redisServerAddress)
 	}
-	if err := listener.Close(); err != nil {
 
-		log.Printf("failed to close listener: %v\n", err)
-
-	}
+	defer func(l net.Listener) {
+		if err := l.Close(); err != nil {
+			log.Printf("failed to close listener: %v\n", err)
+		}
+	}(listener)
 
 	for {
 		conn, err := listener.Accept()
