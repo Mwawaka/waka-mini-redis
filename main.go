@@ -7,6 +7,7 @@ import (
 	"io"
 	"log"
 	"net"
+	"os"
 	"strconv"
 	"strings"
 	"time"
@@ -31,6 +32,7 @@ var (
 )
 
 func main() {
+	cmd()
 	err := run()
 	if err != nil {
 		log.Fatal(err)
@@ -43,13 +45,11 @@ func run() error {
 	if err != nil {
 		return fmt.Errorf("failed to bind to port adress: %s", redisServerAddress)
 	}
+	if err := listener.Close(); err != nil {
 
-	defer func(l net.Listener) {
-		err := l.Close()
-		if err != nil {
-			log.Printf("failed to close listener: %v\n", err)
-		}
-	}(listener)
+		log.Printf("failed to close listener: %v\n", err)
+
+	}
 
 	for {
 		conn, err := listener.Accept()
@@ -189,6 +189,9 @@ func handleSet(commands []string) []byte {
 	return bulkStringResponse("OK")
 }
 
+func handleConfig() {
+
+}
 func simpleErrorResponse(msg string) []byte {
 	err := fmt.Sprintf(": %s:  command not found", msg)
 	result := simpleErrors + err + crlf
@@ -233,9 +236,24 @@ func deleteKey(key string, timer <-chan time.Time) {
 func cmd() {
 	//non var which returns a pointer that can be stored
 	dir := flag.String("dir", " ", "directory where the RDB files are stored")
-
-	dbfilename := flag.String("dbfilename", "", "the name of the RDB file")
-
+	filename := flag.String("filename", "", "the name of the RDB file")
 	flag.Parse()
+
+	if err := os.Mkdir(*dir, os.ModePerm); err != nil {
+		log.Fatal("error creating directory")
+	}
+
+	file, err := os.Create(*filename)
+
+	if err != nil {
+		log.Fatal("error creating file")
+	}
+
+	if err := file.Close(); err != nil {
+		log.Fatal("error closing file")
+	}
+
+	fmt.Println("directory: ", *dir)
+	fmt.Println("database filename: ", *filename)
 
 }
