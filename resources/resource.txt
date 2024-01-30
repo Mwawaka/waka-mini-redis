@@ -1,0 +1,18 @@
+Writing a TCP server
+https://www.youtube.com/watch?v=1HF-UAGcuvs
+
+Network Protocols
+https://app.codecrafters.io/concepts/network-protocols
+
+TCP overview
+https://app.codecrafters.io/concepts/tcp-overview
+
+https://lethain.com/redis-protocol/
+
+commands
+https://redis.io/commands/
+
+redis protocol
+https://redis.io/topics/protocol
+
+*1\r\n$4\r\nping\r\n
