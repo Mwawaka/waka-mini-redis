@@ -2,6 +2,7 @@ package main
 
 import (
 	"bufio"
+	"flag"
 	"fmt"
 	"io"
 	"log"
@@ -227,4 +228,14 @@ func readLine(reader *bufio.Reader) (string, error) {
 func deleteKey(key string, timer <-chan time.Time) {
 	<-timer
 	db[key] = ""
+}
+
+func cmd() {
+	//non var which returns a pointer that can be stored
+	dir := flag.String("dir", " ", "directory where the RDB files are stored")
+
+	dbfilename := flag.String("dbfilename", "", "the name of the RDB file")
+
+	flag.Parse()
+
 }
