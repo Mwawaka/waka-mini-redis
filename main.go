@@ -167,7 +167,7 @@ func handleSet(commands []string) []byte {
 	key := commands[1]
 	value = strings.Join(commands[2:], "")
 
-	if len(commands) > 3 {
+	if len(commands) > 4 {
 		value = strings.Join(commands[2:len(commands)-2], " ")
 		command := strings.ToUpper(commands[len(commands)-2])
 		if command == "PX" {
