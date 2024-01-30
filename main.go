@@ -8,6 +8,7 @@ import (
 	"net"
 	"strconv"
 	"strings"
+	"sync"
 	"time"
 )
 
@@ -121,6 +122,7 @@ func handleRequest(conn net.Conn) {
 
 func handleCommands(commands []string) []byte {
 	var result []byte
+	var wg sync.WaitGroup
 
 	if len(commands) > 0 {
 		switch strings.ToUpper(commands[0]) {
@@ -142,9 +144,13 @@ func handleCommands(commands []string) []byte {
 				if err != nil {
 					log.Fatal("Error parsing string")
 				}
-				timer := time.Duration(expiryMS) * time.Millisecond
-				fmt.Println(timer)
-
+				timer := time.After(time.Duration(expiryMS) * time.Millisecond)
+				wg.Add(1)
+				go func() {
+					deleteKey(key, timer)
+					wg.Done()
+				}()
+				wg.Wait()
 			}
 
 			result = bulkStringResponse("OK")
@@ -197,6 +203,7 @@ func readLine(reader *bufio.Reader) (string, error) {
 	return strings.TrimSuffix(data, "\r\n"), nil
 }
 
-func deleteKey(key string) {
+func deleteKey(key string, timer <-chan time.Time) {
+	<-timer
 	db[key] = ""
 }
