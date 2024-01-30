@@ -163,23 +163,27 @@ func handleGet(commands []string) []byte {
 }
 
 func handleSet(commands []string) []byte {
+	var value string
 	key := commands[1]
-	value := strings.Join(commands[2:len(commands)-2], " ")
-	db[key] = value
-	command := strings.ToUpper(commands[len(commands)-2])
+	value = strings.Join(commands[2:], "")
 
-	if command == "PX" {
-		expiryMS, err := strconv.Atoi(commands[len(commands)-1])
+	if len(commands) > 3 {
+		value = strings.Join(commands[2:len(commands)-2], " ")
+		command := strings.ToUpper(commands[len(commands)-2])
+		if command == "PX" {
+			expiryMS, err := strconv.Atoi(commands[len(commands)-1])
 
-		if err != nil {
-			log.Fatal("Error parsing string")
+			if err != nil {
+				log.Fatal("Error parsing string")
+			}
+			db[key] = value
+			timer := time.After(time.Duration(expiryMS) * time.Millisecond)
+			go deleteKey(key, timer)
+		} else {
+			return simpleErrorResponse(command)
 		}
-
-		timer := time.After(time.Duration(expiryMS) * time.Millisecond)
-		go deleteKey(key, timer)
-	} else {
-		return simpleErrorResponse(command)
 	}
+	db[key] = value
 
 	return bulkStringResponse("OK")
 }
@@ -198,6 +202,7 @@ func simpleStringResponse(msg string) []byte {
 func bulkStringResponse(msg string) []byte {
 	size := strconv.Itoa(len(msg))
 	result := bulkStrings + size + crlf + msg + crlf
+
 	return []byte(result)
 }
 
