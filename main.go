@@ -128,31 +128,10 @@ func handleCommands(commands []string) []byte {
 			result = handleEcho(commands)
 		case "PING":
 			result = handlePing()
-		case "SET":
-			key := commands[1]
-			value := strings.Join(commands[2:len(commands)-2], " ")
-			db[key] = value
-			if strings.ToUpper(commands[len(commands)-2]) == "PX" {
-				expiryMS, err := strconv.Atoi(commands[len(commands)-1])
-
-				if err != nil {
-					log.Fatal("Error parsing string")
-				}
-
-				timer := time.After(time.Duration(expiryMS) * time.Millisecond)
-				go deleteKey(key, timer)
-
-			}
-
-			result = bulkStringResponse("OK")
 		case "GET":
-			key := commands[1]
-			value := db[key]
-			if value == "" {
-				return nullBulkStringResponse()
-
-			}
-			result = bulkStringResponse(value)
+			result = handleGet(commands)
+		case "SET":
+			result = handleSet(commands)
 		default:
 			err := fmt.Sprintf(": %s:  command not found", commands[0])
 			result = simpleErrorResponse(err)
@@ -172,6 +151,35 @@ func handleEcho(commands []string) []byte {
 		return bulkStringResponse(echoString)
 	}
 	return nullBulkStringResponse()
+}
+
+func handleGet(commands []string) []byte {
+	key := commands[1]
+	value := db[key]
+	if value == "" {
+		return nullBulkStringResponse()
+
+	}
+	return bulkStringResponse(value)
+}
+
+func handleSet(commands []string) []byte {
+	key := commands[1]
+	value := strings.Join(commands[2:len(commands)-2], " ")
+	db[key] = value
+
+	if strings.ToUpper(commands[len(commands)-2]) == "PX" {
+		expiryMS, err := strconv.Atoi(commands[len(commands)-1])
+
+		if err != nil {
+			log.Fatal("Error parsing string")
+		}
+
+		timer := time.After(time.Duration(expiryMS) * time.Millisecond)
+		go deleteKey(key, timer)
+	}
+
+	return bulkStringResponse("OK")
 }
 
 func simpleErrorResponse(msg string) []byte {
