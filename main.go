@@ -133,8 +133,7 @@ func handleCommands(commands []string) []byte {
 		case "SET":
 			result = handleSet(commands)
 		default:
-			err := fmt.Sprintf(": %s:  command not found", commands[0])
-			result = simpleErrorResponse(err)
+			result = simpleErrorResponse(commands[0])
 		}
 	}
 	return result
@@ -167,8 +166,9 @@ func handleSet(commands []string) []byte {
 	key := commands[1]
 	value := strings.Join(commands[2:len(commands)-2], " ")
 	db[key] = value
+	command := strings.ToUpper(commands[len(commands)-2])
 
-	if strings.ToUpper(commands[len(commands)-2]) == "PX" {
+	if command == "PX" {
 		expiryMS, err := strconv.Atoi(commands[len(commands)-1])
 
 		if err != nil {
@@ -177,13 +177,16 @@ func handleSet(commands []string) []byte {
 
 		timer := time.After(time.Duration(expiryMS) * time.Millisecond)
 		go deleteKey(key, timer)
+	} else {
+		return simpleErrorResponse()
 	}
 
 	return bulkStringResponse("OK")
 }
 
 func simpleErrorResponse(msg string) []byte {
-	result := simpleErrors + msg + crlf
+	err := fmt.Sprintf(": %s:  command not found", msg)
+	result := simpleErrors + err + crlf
 	return []byte(result)
 }
 
