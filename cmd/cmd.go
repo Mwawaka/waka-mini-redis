@@ -8,11 +8,6 @@ import (
 	"path/filepath"
 )
 
-var (
-	directory string
-	dbFile    string
-)
-
 func Cmd() []string {
 	//non var which returns a pointer that can be stored
 	var args []string
@@ -21,37 +16,37 @@ func Cmd() []string {
 	flag.Parse()
 	fmt.Println("directory: ", *dir)
 	fmt.Println("database filename: ", *filename)
-	directory = *dir
-	dbFile = *filename
-	args = append(args, directory, dbFile)
+
+	args = append(args, *dir, *filename)
+	createDirAndFile(*dir, *filename)
 	return args
 }
 
-func createDirAndFile() {
+func createDirAndFile(dirname, filename string) {
 
-	path, err := os.Getwd()
+	// get absolute path of the directory
+	absDirPath, err := filepath.Abs(dirname)
 
 	if err != nil {
-		log.Fatal("error getting directory")
+		log.Fatal("error getting the absolute path of the directory")
 	}
 
-	dirPath := filepath.Join(path, directory)
-
-	_, err = os.Stat(dirPath)
-
-	if os.IsNotExist(err) {
-		if err := os.Mkdir(dirPath, os.ModePerm); err != nil {
-			log.Fatal("error creating directory: ", err)
+	// create directory if it doesn't exist
+	if _, err := os.Stat(absDirPath); os.IsNotExist(err) {
+		if err := os.MkdirAll(absDirPath, os.ModePerm); err != nil {
+			log.Fatal("error creating the directory")
 		}
 	}
-	filePath := filepath.Join(dirPath, dbFile)
+
+	// creating the file in the directory
+	filePath := filepath.Join(absDirPath, filename)
 	file, err := os.Create(filePath)
 
 	if err != nil {
-		log.Fatalf("error creating file: %v", err)
+		log.Fatal("error creating the file")
 	}
 
-	if err := file.Close(); err != nil {
-		log.Fatal("error closing file")
+	if err = file.Close(); err != nil {
+		log.Fatal("error closing the file")
 	}
 }
