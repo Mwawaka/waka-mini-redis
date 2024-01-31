@@ -196,20 +196,13 @@ func handleSet(commands []string) []byte {
 }
 
 func handleConfig(commands []string) []byte {
-	var array []string
+
 	if strings.ToUpper(commands[1]) == "GET" {
 		if commands[2] == "dir" {
 			return handleGetDir(commands)
 		} else if commands[2] == "dbfilename" {
-			array = append(array, commands[2], args[1])
-			arrLen := strconv.Itoa(len(array))
-			arg1 := strconv.Itoa(len(commands[2]))
-			arg3 := strconv.Itoa(len(args[1]))
-
-			resp := arrays + arrLen + crlf + bulkStrings + arg1 + crlf + commands[2] + crlf + bulkStrings + arg3 + crlf + args[1] + crlf
-			return []byte(resp)
+			return handleGetFile(commands)
 		}
-
 	}
 
 	return simpleStringResponse("Hacking with the anonymous for good")
@@ -220,8 +213,17 @@ func handleGetDir(commands []string) []byte {
 	arrLen := strconv.Itoa(len(array))
 	arg1 := strconv.Itoa(len(commands[2]))
 	arg3 := strconv.Itoa(len(args[0]))
-
 	resp := arrays + arrLen + crlf + bulkStrings + arg1 + crlf + commands[2] + crlf + bulkStrings + arg3 + crlf + args[0] + crlf
+	return []byte(resp)
+}
+
+func handleGetFile(commands []string) []byte {
+	var array []string
+	array = append(array, commands[2], args[1])
+	arrLen := strconv.Itoa(len(array))
+	arg1 := strconv.Itoa(len(commands[2]))
+	arg3 := strconv.Itoa(len(args[1]))
+	resp := arrays + arrLen + crlf + bulkStrings + arg1 + crlf + commands[2] + crlf + bulkStrings + arg3 + crlf + args[1] + crlf
 	return []byte(resp)
 }
 func simpleErrorResponse(msg string) []byte {
