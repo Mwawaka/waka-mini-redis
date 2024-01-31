@@ -266,3 +266,5 @@ func deleteKey(key string, timer <-chan time.Time) {
 	<-timer
 	db[key] = ""
 }
+
+// TODO: refactor the handleGetDir and handleGetFile to use bulk strings

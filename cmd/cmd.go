@@ -1,11 +1,16 @@
 package cmd
 
 import (
+	"bufio"
 	"flag"
 	"fmt"
 	"log"
 	"os"
 	"path/filepath"
+)
+
+var (
+	fileP string
 )
 
 func Cmd() []string {
@@ -33,6 +38,7 @@ func createDirAndFile(dirname, filename string) {
 
 	// create directory if it doesn't exist
 	if _, err := os.Stat(absDirPath); os.IsNotExist(err) {
+
 		if err := os.MkdirAll(absDirPath, os.ModePerm); err != nil {
 			log.Fatal("error creating the directory: ", err)
 		}
@@ -40,6 +46,7 @@ func createDirAndFile(dirname, filename string) {
 
 	// creating the file in the directory
 	filePath := filepath.Join(absDirPath, filename)
+	fileP = filePath
 	file, err := os.Create(filePath)
 
 	if err != nil {
@@ -48,5 +55,40 @@ func createDirAndFile(dirname, filename string) {
 
 	if err = file.Close(); err != nil {
 		log.Fatal("error closing the file")
+	}
+	fmt.Println(filePath)
+}
+
+func handleOpenFile() {
+	const abs string = "/home/mwawaka/go/src/projects/mini-redis/dump.rdb"
+	file, err := os.Open(abs)
+
+	if err != nil {
+		log.Fatal("error opening the file")
+	}
+	defer func(f *os.File) {
+		err := f.Close()
+
+		if err != nil {
+			log.Fatal("error closing the file")
+		}
+	}(file)
+	parseRDB(file)
+}
+
+func parseRDB(file *os.File) (string, error) {
+	const selectDB string = ""
+	reader := bufio.NewReader(file)
+
+	for {
+		opCode, err := reader.ReadByte()
+
+		if err != nil {
+			return "", err
+		}
+
+		switch opCode {
+		case
+		}
 	}
 }
