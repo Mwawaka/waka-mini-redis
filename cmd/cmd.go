@@ -1,39 +1,48 @@
 package cmd
 
 import (
-	"errors"
 	"flag"
 	"fmt"
+	"log"
 	"os"
+	"path/filepath"
 )
 
-func Cmd() error {
+func Cmd() []string {
 	//non var which returns a pointer that can be stored
+	var args []string
 	dir := flag.String("dir", " ", "directory where the RDB files are stored")
 	filename := flag.String("filename", "", "the name of the RDB file")
 	flag.Parse()
 
-	if err := os.Mkdir(*dir, os.ModePerm); err != nil {
-		return errors.New("error creating directory")
-	}
-
 	path, err := os.Getwd()
 
 	if err != nil {
-		return errors.New("error getting directory")
+		log.Fatal("error getting directory")
 	}
-	filePath := path + "/" + *dir + "/" + *filename
+
+	dirPath := filepath.Join(path, *dir)
+
+	_, err = os.Stat(dirPath)
+
+	if os.IsNotExist(err) {
+		if err := os.Mkdir(dirPath, os.ModePerm); err != nil {
+			log.Fatal("error creating directory: ", err)
+		}
+	}
+	filePath := filepath.Join(dirPath, *filename)
 	file, err := os.Create(filePath)
 
 	if err != nil {
-		return errors.New("error creating file")
+		log.Fatalf("error creating file: %v", err)
 	}
 
 	if err := file.Close(); err != nil {
-		return errors.New("error closing file")
+		log.Fatal("error closing file")
 	}
 
 	fmt.Println("directory: ", *dir)
 	fmt.Println("database filename: ", *filename)
-	return nil
+	args = append(args, *dir, *filename)
+	return args
 }
