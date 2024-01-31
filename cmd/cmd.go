@@ -34,7 +34,7 @@ func createDirAndFile(dirname, filename string) {
 	// create directory if it doesn't exist
 	if _, err := os.Stat(absDirPath); os.IsNotExist(err) {
 		if err := os.MkdirAll(absDirPath, os.ModePerm); err != nil {
-			log.Fatal("error creating the directory")
+			log.Fatal("error creating the directory: ", err)
 		}
 	}
 
