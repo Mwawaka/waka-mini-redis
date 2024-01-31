@@ -8,12 +8,26 @@ import (
 	"path/filepath"
 )
 
+var (
+	directory string
+	dbFile    string
+)
+
 func Cmd() []string {
 	//non var which returns a pointer that can be stored
 	var args []string
 	dir := flag.String("dir", " ", "directory where the RDB files are stored")
-	filename := flag.String("filename", "", "the name of the RDB file")
+	filename := flag.String("dbfilename", "", "the name of the RDB file")
 	flag.Parse()
+	fmt.Println("directory: ", *dir)
+	fmt.Println("database filename: ", *filename)
+	directory = *dir
+	dbFile = *filename
+	args = append(args, directory, dbFile)
+	return args
+}
+
+func createDirAndFile() {
 
 	path, err := os.Getwd()
 
@@ -21,7 +35,7 @@ func Cmd() []string {
 		log.Fatal("error getting directory")
 	}
 
-	dirPath := filepath.Join(path, *dir)
+	dirPath := filepath.Join(path, directory)
 
 	_, err = os.Stat(dirPath)
 
@@ -30,7 +44,7 @@ func Cmd() []string {
 			log.Fatal("error creating directory: ", err)
 		}
 	}
-	filePath := filepath.Join(dirPath, *filename)
+	filePath := filepath.Join(dirPath, dbFile)
 	file, err := os.Create(filePath)
 
 	if err != nil {
@@ -40,9 +54,4 @@ func Cmd() []string {
 	if err := file.Close(); err != nil {
 		log.Fatal("error closing file")
 	}
-
-	fmt.Println("directory: ", *dir)
-	fmt.Println("database filename: ", *filename)
-	args = append(args, *dir, *filename)
-	return args
 }
