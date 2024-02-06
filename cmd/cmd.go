@@ -107,8 +107,20 @@ func parseRDB(file *os.File) error {
 		return err
 	}
 
-	//fmt.Println("Magic string: ", string(magicString))
-	//fmt.Println("Version string: ", string(versionString))
-	fmt.Println(byte(0xfa))
+	for {
+		opcode, err := reader.ReadByte()
+		if err != nil {
+			return err
+		}
+
+		switch opcode {
+		case REDIS_RDB_OPCODE_AUX:
+
+		}
+	}
 	return nil
+}
+
+func handleAux(reader *bufio.Reader) {
+
 }
