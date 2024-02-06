@@ -10,10 +10,6 @@ import (
 	"path/filepath"
 )
 
-var (
-	fileP string
-)
-
 func Cmd() []string {
 	//non var which returns a pointer that can be stored
 	var args []string
@@ -88,19 +84,22 @@ func handleOpenFile() {
 }
 
 func parseRDB(file *os.File) error {
-	var array []byte
 	reader := bufio.NewReader(file)
+	magicString := make([]byte, 5)
+	versionString := make([]byte, 4)
+	_, err := reader.Read(magicString)
 
-	for {
-		opCode, err := reader.ReadByte()
-
-		if err != nil {
-			return err
-		}
-
-		fmt.Print(opCode, ", ")
-		array = append(array, opCode)
-
+	if err != nil {
+		return err
 	}
 
+	_, err = reader.Read(versionString)
+
+	if err != nil {
+		return err
+	}
+
+	fmt.Println("Magic string: ", string(magicString))
+	fmt.Println("Version string: ", string(versionString))
+	return nil
 }
