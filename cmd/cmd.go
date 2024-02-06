@@ -10,6 +10,15 @@ import (
 	"path/filepath"
 )
 
+const (
+	REDIS_RDB_OPCODE_AUX           = byte(0xFA)
+	REDIS_RDB_OPCODE_RESIZEDB      = byte(0xFB)
+	REDIS_RDB_OPCODE_EXPIRETIME_MS = byte(0xFC)
+	REDIS_RDB_OPCODE_EXPIRETIME    = byte(0xFD)
+	REDIS_RDB_OPCODE_SELECTDB      = byte(0xFE)
+	REDIS_RDB_OPCODE_EOF           = byte(0xFF)
+)
+
 func Cmd() []string {
 	//non var which returns a pointer that can be stored
 	var args []string
@@ -43,7 +52,6 @@ func createDirAndFile(dirname, filename string) {
 
 	// creating the file in the directory
 	filePath := filepath.Join(absDirPath, filename)
-	fileP = filePath
 	file, err := os.Create(filePath)
 
 	if err != nil {
@@ -99,7 +107,8 @@ func parseRDB(file *os.File) error {
 		return err
 	}
 
-	fmt.Println("Magic string: ", string(magicString))
-	fmt.Println("Version string: ", string(versionString))
+	//fmt.Println("Magic string: ", string(magicString))
+	//fmt.Println("Version string: ", string(versionString))
+	fmt.Println(byte(0xfa))
 	return nil
 }
