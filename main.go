@@ -46,7 +46,7 @@ func run() error {
 	listener, err := net.Listen(redisServerNetwork, redisServerAddress)
 
 	if err != nil {
-		return fmt.Errorf("failed to bind to port adress: %s", redisServerAddress)
+		return fmt.Errorf("failed to bind to port adress: %s :%v", redisServerAddress, err)
 	}
 
 	defer func(l net.Listener) {

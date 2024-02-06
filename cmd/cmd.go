@@ -4,6 +4,7 @@ import (
 	"bufio"
 	"flag"
 	"fmt"
+	"io"
 	"log"
 	"os"
 	"path/filepath"
@@ -57,6 +58,7 @@ func createDirAndFile(dirname, filename string) {
 		log.Fatal("error closing the file")
 	}
 	fmt.Println(filePath)
+	handleOpenFile()
 }
 
 func handleOpenFile() {
@@ -73,22 +75,32 @@ func handleOpenFile() {
 			log.Fatal("error closing the file")
 		}
 	}(file)
-	parseRDB(file)
+
+	err = parseRDB(file)
+
+	if err != nil {
+		if err == io.EOF {
+			return
+		}
+		log.Fatal("error parsing: ", err)
+	}
+
 }
 
-func parseRDB(file *os.File) (string, error) {
-	const selectDB string = ""
+func parseRDB(file *os.File) error {
+	var array []byte
 	reader := bufio.NewReader(file)
 
 	for {
 		opCode, err := reader.ReadByte()
 
 		if err != nil {
-			return "", err
+			return err
 		}
 
-		switch opCode {
-		case
-		}
+		fmt.Print(opCode, ", ")
+		array = append(array, opCode)
+
 	}
+
 }

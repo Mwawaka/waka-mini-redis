@@ -15,4 +15,23 @@ https://redis.io/commands/
 redis protocol
 https://redis.io/topics/protocol
 
-*1\r\n$4\r\nping\r\n
+RDB file format
+
+I understand that the concept of length encoding might seem a bit complex. Let's break it down:
+
+Length encoding is a method used to store the length of the next object in a data stream. It's designed to use as few bytes as possible. This is particularly useful in data transmission or storage, where we want to minimize the amount of space used.
+
+Here's a simpler explanation of the process:
+
+1. **Read one byte from the stream**: A byte is a unit of digital information that consists of 8 bits. You can think of it as a group of 8 slots, where each slot can either be 0 or 1.
+
+2. **Compare the two most significant bits**: The most significant bits are the first two slots of the byte. Depending on what these two bits are, we do different things:
+
+    - If the bits are `00`, we look at the next 6 bits (or slots) in the byte. These 6 bits give us the length of the next object.
+    - If the bits are `01`, we read one more byte (another group of 8 slots). We then combine the remaining 6 bits of the first byte and the 8 bits of the second byte to get a 14-bit number. This number gives us the length of the next object.
+    - If the bits are `10`, we ignore the remaining 6 bits in the byte. We then read the next 4 bytes (32 slots) from the stream. These 32 bits give us the length of the next object.
+    - If the bits are `11`, the next object is encoded in a special format. The remaining 6 bits in the byte tell us what this special format is.
+
+This method allows us to store the length of objects in a very space-efficient manner. For example, if an object's length is 63 or less, we can store it in just one byte. If it's 16,383 or less, we can store it in two bytes. And if it's $$2^{32} - 1$$ or less, we can store it in four bytes.
+
+I hope this helps! Let me know if you have any other questions.
