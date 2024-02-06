@@ -118,9 +118,18 @@ func parseRDB(file *os.File) error {
 
 		}
 	}
-	return nil
+
 }
 
-func handleAux(reader *bufio.Reader) {
+func handleAux(reader *bufio.Reader) error {
 
+}
+
+func handleString(reader *bufio.Reader) {
+	bit, _ := reader.ReadByte()
+	sb:= bit>>6
+
+	switch sb{
+	case
+	}
 }
