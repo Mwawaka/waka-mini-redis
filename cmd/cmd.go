@@ -2,6 +2,7 @@ package cmd
 
 import (
 	"bufio"
+	"encoding/binary"
 	"flag"
 	"fmt"
 	"io"
@@ -105,6 +106,21 @@ func parseRDB(file *os.File) error {
 
 	if err != nil {
 		return err
+	}
+
+	for {
+		var opcode byte
+		err := binary.Read(reader, binary.LittleEndian, &opcode)
+
+		if err != nil {
+			if err == io.EOF {
+				break
+			}
+			return err
+		}
+
+		fmt.Printf("%x, ", opcode)
+
 	}
 
 	return nil
