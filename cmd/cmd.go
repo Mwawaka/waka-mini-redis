@@ -92,7 +92,22 @@ func handleOpenFile() {
 }
 
 func parseRDB(file *os.File) error {
+	reader := bufio.NewReader(file)
+	magicString := make([]byte, 5)
+	versionString := make([]byte, 4)
+	_, err := io.ReadFull(reader, magicString)
 
+	if err != nil {
+		return err
+	}
+
+	_, err = io.ReadFull(reader, versionString)
+
+	if err != nil {
+		return err
+	}
+
+	return nil
 }
 
 //func handleAux(reader *bufio.Reader) error {
