@@ -119,20 +119,59 @@ func parseRDB(file *os.File) error {
 			return err
 		}
 
-		fmt.Printf("%x, ", opcode)
+		//fmt.Printf("%x, ", opcode)
+
+		switch opcode {
+		case REDIS_RDB_OPCODE_AUX:
+			err = handleAux(reader)
+			return err
+		}
 
 	}
 
 	return nil
 }
 
-//func handleAux(reader *bufio.Reader) error {
-//
-//}
+func handleAux(reader *bufio.Reader) error {
+	keyLength, err := binary.ReadUvarint(reader)
 
-func handleString(reader *bufio.Reader) {
-	bit, _ := reader.ReadByte()
-	sb := bit >> 6
-	print(sb)
-	fmt.Printf("Byte:%x\n", bit)
+	if err != nil {
+		return err
+	}
+	fmt.Println(keyLength)
+	keyBytes := make([]byte, keyLength)
+
+	_, err = reader.Read(keyBytes)
+
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+
+	fmt.Printf("Key:%s\n", keyBytes)
+
+	valueLength, err := binary.ReadUvarint(reader)
+
+	if err != nil {
+		return err
+	}
+	fmt.Println(valueLength)
+	valueBytes := make([]byte, valueLength)
+
+	_, err = reader.Read(valueBytes)
+
+	if err != nil {
+		log.Print(err)
+		return err
+	}
+
+	fmt.Printf("Value:%s\n", valueBytes)
+	return nil
 }
+
+//func handleString(reader *bufio.Reader) {
+//	bit, _ := reader.ReadByte()
+//	sb := bit >> 6
+//	print(sb)
+//	fmt.Printf("Byte:%x\n", bit)
+//}
