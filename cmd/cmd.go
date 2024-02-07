@@ -92,44 +92,16 @@ func handleOpenFile() {
 }
 
 func parseRDB(file *os.File) error {
-	reader := bufio.NewReader(file)
-	magicString := make([]byte, 5)
-	versionString := make([]byte, 4)
-	_, err := reader.Read(magicString)
-
-	if err != nil {
-		return err
-	}
-
-	_, err = reader.Read(versionString)
-
-	if err != nil {
-		return err
-	}
-
-	for {
-		opcode, err := reader.ReadByte()
-		if err != nil {
-			return err
-		}
-
-		switch opcode {
-		case REDIS_RDB_OPCODE_AUX:
-
-		}
-	}
 
 }
 
-func handleAux(reader *bufio.Reader) error {
-
-}
+//func handleAux(reader *bufio.Reader) error {
+//
+//}
 
 func handleString(reader *bufio.Reader) {
 	bit, _ := reader.ReadByte()
-	sb:= bit>>6
-
-	switch sb{
-	case
-	}
+	sb := bit >> 6
+	print(sb)
+	fmt.Printf("Byte:%x\n", bit)
 }
